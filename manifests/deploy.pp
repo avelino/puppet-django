@@ -22,7 +22,8 @@ define django::deploy(
   $graceful_timeout = undef,
   $keepalive = undef,
   $limit_request_line = undef,
-  $limit_request_fields = undef
+  $limit_request_fields = undef,
+  $numprocs = undef
 
 ) {
 
@@ -129,11 +130,21 @@ define django::deploy(
   }
 
   # Configure supervisor to run django
-  supervisor::app { $app_name:
-    command   => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
-    directory => $project_abs_path,
-    user      => $user,
-    require   => File["gunicorn ${app_name}"],
+  if ($numprocs) {
+     supervisor::app { $app_name:
+      command   => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -b ${bind}%(process_num)s",
+      numprocs  => $numprocs,
+      directory => $project_abs_path,
+      user      => $user,
+      require   => File["gunicorn ${app_name}"],
+    }
+  } else {
+    supervisor::app { $app_name:
+      command   => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
+      directory => $project_abs_path,
+      user      => $user,
+      require   => File["gunicorn ${app_name}"],
+    }
   }
 
 }
