@@ -135,7 +135,7 @@ define django::deploy(
       command       => "${venv_path}/bin/gunicorn_django -b ${bind}%(process_num)s -w ${workers}",
       numprocs      => $numprocs,
       directory     => $project_abs_path,
-      process_name  => "${app_name}:${bind}%(process_num)s"
+      process_name  => "${app_name}:${bind}%(process_num)s",
       user          => $user,
     }
   } else {
