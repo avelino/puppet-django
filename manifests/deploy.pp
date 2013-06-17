@@ -132,11 +132,11 @@ define django::deploy(
   # Configure supervisor to run django
   if ($numprocs) {
      supervisor::app { $app_name:
-      command   => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -b ${bind}%(process_num)s",
-      numprocs  => $numprocs,
-      directory => $project_abs_path,
-      user      => $user,
-      require   => File["gunicorn ${app_name}"],
+      command       => "${venv_path}/bin/gunicorn_django -b ${bind}%(process_num)s -w ${workers}",
+      numprocs      => $numprocs,
+      directory     => $project_abs_path,
+      process_name  => "${app_name}:${bind}%(process_num)s"
+      user          => $user,
     }
   } else {
     supervisor::app { $app_name:
