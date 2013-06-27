@@ -24,7 +24,8 @@ define django::deploy(
   $keepalive = undef,
   $limit_request_line = undef,
   $limit_request_fields = undef,
-  $numprocs = undef
+  $numprocs = undef,
+  log_file = undef
 
 ) {
 
