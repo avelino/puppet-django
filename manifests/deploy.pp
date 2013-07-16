@@ -25,7 +25,7 @@ define django::deploy(
   $limit_request_line = undef,
   $limit_request_fields = undef,
   $numprocs = undef,
-  $log_file = "/tmp/gunicorn.log"
+  $log_file = "/tmp/gunicorn.log",
   $newrelic = undef,
   $environment = undef,
 ) {
