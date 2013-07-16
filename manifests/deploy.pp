@@ -26,7 +26,7 @@ define django::deploy(
   $limit_request_fields = undef,
   $numprocs = undef,
   $log_file = "/tmp/gunicorn.log"
-
+  $newrelic = undef,
 ) {
 
   # Set django absolute path
@@ -133,20 +133,41 @@ define django::deploy(
 
   # Configure supervisor to run django
   if ($numprocs) {
-     supervisor::app { $app_name:
-      command       => "${venv_path}/bin/gunicorn_django -b ${bind}%(process_num)s -c ${venv_path}/gunicorn.conf.py --log-file ${log_file}",
-      numprocs      => $numprocs,
-      directory     => $project_abs_path,
-      process_name  => "${app_name}-%(process_num)s",
-      user          => $user,
-      require       => File["gunicorn ${app_name}"],
+    if ($newrelic) {
+       supervisor::app { $app_name:
+        command       => "${venv_path}/bin/newrelic-admin run-program ${venv_path}/bin/gunicorn_django -b ${bind}%(process_num)s -c ${venv_path}/gunicorn.conf.py --log-file ${log_file}",
+        numprocs      => $numprocs,
+        directory     => $project_abs_path,
+        process_name  => "${app_name}-%(process_num)s",
+        user          => $user,
+        require       => File["gunicorn ${app_name}"],
+      }
+    } else {
+        supervisor::app { $app_name:
+        command       => "${venv_path}/bin/gunicorn_django -b ${bind}%(process_num)s -c ${venv_path}/gunicorn.conf.py --log-file ${log_file}",
+        numprocs      => $numprocs,
+        directory     => $project_abs_path,
+        process_name  => "${app_name}-%(process_num)s",
+        user          => $user,
+        require       => File["gunicorn ${app_name}"],
+      }   
     }
   } else {
-    supervisor::app { $app_name:
-      command   => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
-      directory => $project_abs_path,
-      user      => $user,
-      require   => File["gunicorn ${app_name}"],
+    if ($newrelic) {
+      supervisor::app { $app_name:
+        command   => "${venv_path}/bin/newrelic-admin run-program ${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
+        directory => $project_abs_path,
+        user      => $user,
+        require   => File["gunicorn ${app_name}"],
+      }
+    } else {
+      supervisor::app { $app_name:
+        command   => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
+        directory => $project_abs_path,
+        user      => $user,
+        require   => File["gunicorn ${app_name}"],
+      }
+
     }
   }
 
