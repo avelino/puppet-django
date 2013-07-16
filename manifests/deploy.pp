@@ -27,6 +27,7 @@ define django::deploy(
   $numprocs = undef,
   $log_file = "/tmp/gunicorn.log"
   $newrelic = undef,
+  $environment = undef,
 ) {
 
   # Set django absolute path
@@ -140,6 +141,7 @@ define django::deploy(
         directory     => $project_abs_path,
         process_name  => "${app_name}-%(process_num)s",
         user          => $user,
+        environment   => $environment,
         require       => File["gunicorn ${app_name}"],
       }
     } else {
@@ -149,22 +151,25 @@ define django::deploy(
         directory     => $project_abs_path,
         process_name  => "${app_name}-%(process_num)s",
         user          => $user,
+        environment   => $environment,
         require       => File["gunicorn ${app_name}"],
       }   
     }
   } else {
     if ($newrelic) {
       supervisor::app { $app_name:
-        command   => "${venv_path}/bin/newrelic-admin run-program ${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
-        directory => $project_abs_path,
-        user      => $user,
+        command      => "${venv_path}/bin/newrelic-admin run-program ${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
+        directory    => $project_abs_path,
+        user         => $user,
+        environment  => $environment,
         require   => File["gunicorn ${app_name}"],
       }
     } else {
       supervisor::app { $app_name:
-        command   => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
-        directory => $project_abs_path,
-        user      => $user,
+        command      => "${venv_path}/bin/gunicorn ${gunicorn_app_module} -c ${venv_path}/gunicorn.conf.py",
+        directory    => $project_abs_path,
+        user         => $user,
+        environment  => $environment,
         require   => File["gunicorn ${app_name}"],
       }
 
