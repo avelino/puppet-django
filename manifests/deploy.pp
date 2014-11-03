@@ -49,22 +49,22 @@ define django::deploy(
   }
 
   # Create virtualenv
-  <% if $virtualenv_system_package == true %>
-  virtualenv::create { $venv_path:
-    user            => $user,
-    requirements    => "${clone_path}/${requirements}",
-    system_packages => true,
-    require         => Exec["git-clone ${app_name}"],
-    before          => File["gunicorn ${app_name}"]
+  if $virtualenv_system_package == true {
+    virtualenv::create { $venv_path:
+      user            => $user,
+      requirements    => "${clone_path}/${requirements}",
+      system_packages => true,
+      require         => Exec["git-clone ${app_name}"],
+      before          => File["gunicorn ${app_name}"]
+    }
+  } else {
+    virtualenv::create { $venv_path:
+      user            => $user,
+      requirements    => "${clone_path}/${requirements}",
+      require         => Exec["git-clone ${app_name}"],
+      before          => File["gunicorn ${app_name}"]
+    }
   }
-  <% else %>
-  virtualenv::create { $venv_path:
-    user            => $user,
-    requirements    => "${clone_path}/${requirements}",
-    require         => Exec["git-clone ${app_name}"],
-    before          => File["gunicorn ${app_name}"]
-  }
-  <% end %>
 
   # Create settings local file
   if $settings_local_source {
