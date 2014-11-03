@@ -28,7 +28,7 @@ define django::deploy(
   $log_file = "/tmp/gunicorn.log",
   $newrelic = undef,
   $environment = undef,
-  $virtualenv_system_package = undef,
+  $virtualenv_system_package = false,
 ) {
 
   # Set django absolute path
@@ -49,7 +49,7 @@ define django::deploy(
   }
 
   # Create virtualenv
-  <% if @virtualenv_system_package %>
+  <% if $virtualenv_system_package == true %>
   virtualenv::create { $venv_path:
     user            => $user,
     requirements    => "${clone_path}/${requirements}",
